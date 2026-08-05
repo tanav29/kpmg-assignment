@@ -15,8 +15,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    if (!body.title?.trim() || !body.description?.trim() || !body.language) return NextResponse.json({ error: "Title, description, and language are required." }, { status: 400 });
-    const challenge = await db.challenge.create({ data: { title: body.title.trim(), description: body.description.trim(), language: body.language, testCases: { create: (body.testCases ?? []).filter((test: { input?: string; expected?: string }) => test.input !== undefined && test.expected !== undefined).map((test: { input: string; expected: string; visible?: boolean }) => ({ input: test.input, expected: test.expected, visible: Boolean(test.visible) })) } }, include: { testCases: true } });
+    if (!body.title?.trim() || !body.description?.trim() || !["python", "javascript"].includes(body.language)) return NextResponse.json({ error: "A title, description, and supported language are required." }, { status: 400 });
+    if (body.title.length > 160 || body.description.length > 4_000) return NextResponse.json({ error: "Challenge text is too long." }, { status: 400 });
+    const testCases = Array.isArray(body.testCases) ? body.testCases.filter((test: { input?: string; expected?: string }) => typeof test.input === "string" && typeof test.expected === "string") : [];
+    if (testCases.length === 0 || testCases.length > 50) return NextResponse.json({ error: "Add between 1 and 50 valid test cases." }, { status: 400 });
+    const challenge = await db.challenge.create({ data: { title: body.title.trim(), description: body.description.trim(), language: body.language, testCases: { create: testCases.map((test: { input: string; expected: string; visible?: boolean }) => ({ input: test.input.slice(0, 2_000), expected: test.expected.slice(0, 2_000), visible: Boolean(test.visible) })) } }, include: { testCases: true } });
     return NextResponse.json(challenge, { status: 201 });
   } catch { return NextResponse.json({ error: "Challenge could not be created." }, { status: 500 }); }
 }
