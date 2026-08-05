@@ -21,7 +21,7 @@ bun dev
 
 Open `http://localhost:3000`.
 
-Set `DATABASE_URL` in `.env` to your PostgreSQL connection string, then run `bun run db:push`. Add `OPENAI_API_KEY` and `E2B_API_KEY` to enable live AI responses and E2B execution. Without those keys, the app uses local preview responses so the UI can still be reviewed.
+Set `DATABASE_URL` in `.env` to your PostgreSQL connection string, then run `bun run db:push`. Add `GROQ_API_KEY` and `E2B_API_KEY` to enable live AI responses and E2B execution. Without those keys, the app uses local preview responses so the UI can still be reviewed.
 
 ## MVP workflow
 
