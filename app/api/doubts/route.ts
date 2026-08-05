@@ -1,20 +1,53 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/prisma";
 import { doubtDraft } from "@/lib/ai";
+import { db } from "@/lib/prisma";
+import { InvalidRequestError, readJson, trimmedText } from "@/lib/request";
+
+const OWNER_ID = "demo-student"; // Replace with the authenticated user's id in production.
+const MAX_QUESTION_LENGTH = 2_000;
+
+function errorResponse(error: unknown, fallback: string) {
+  if (error instanceof InvalidRequestError) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+  console.error(fallback, error);
+  return NextResponse.json({ error: fallback }, { status: 500 });
+}
 
 export async function GET() {
   try {
     // The board is shared, but only teacher-approved answers are public.
-    return NextResponse.json(await db.doubt.findMany({ where: { status: "APPROVED" }, orderBy: { createdAt: "desc" }, take: 50 }));
-  } catch { return NextResponse.json({ error: "Doubts could not be loaded." }, { status: 500 }); }
+    const doubts = await db.doubt.findMany({
+      where: { status: "APPROVED" },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+    return NextResponse.json(doubts);
+  } catch (error) {
+    return errorResponse(error, "Doubts could not be loaded.");
+  }
 }
+
 export async function POST(req: Request) {
   try {
-    const { question } = await req.json();
-    const ownerId = "demo-student"; // Replace with the authenticated user's id in production.
-    if (typeof question !== "string" || !question.trim()) return NextResponse.json({ error: "Question is required." }, { status: 400 });
-    if (question.length > 2_000) return NextResponse.json({ error: "Question must be 2,000 characters or fewer." }, { status: 400 });
-    const doubt = await db.doubt.create({ data: { ownerId, question: question.trim(), aiDraft: await doubtDraft(question.trim()) } });
+    const body = await readJson(req);
+    const question = trimmedText(body.question);
+    if (!question) throw new InvalidRequestError("Question is required.");
+    if (question.length > MAX_QUESTION_LENGTH) {
+      throw new InvalidRequestError(
+        `Question must be ${MAX_QUESTION_LENGTH.toLocaleString()} characters or fewer.`,
+      );
+    }
+
+    const doubt = await db.doubt.create({
+      data: {
+        ownerId: OWNER_ID,
+        question,
+        aiDraft: await doubtDraft(question),
+      },
+    });
     return NextResponse.json(doubt, { status: 201 });
-  } catch { return NextResponse.json({ error: "Question could not be posted." }, { status: 500 }); }
+  } catch (error) {
+    return errorResponse(error, "Question could not be posted.");
+  }
 }
