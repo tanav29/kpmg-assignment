@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #f7f7f3;
+  --paper-deep: #efeee8;
+  --ink: #17221f;
+  --muted: #71807a;
+  --line: #dfe5de;
+  --line-strong: #cbd5cd;
+  --amber: #e9a43e;
+  --amber-soft: #fff1d7;
+  --green: #357e5b;
+  --green-soft: #eaf4ec;
+  --danger: #a54c3d;
+  --shadow: 0 18px 45px rgba(28, 42, 35, .065);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--paper); }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: Manrope, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, textarea, select, input { font: inherit; }
+button { transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease, opacity .18s ease; }
+button:not(:disabled):hover { transform: translateY(-1px); }
+button:active:not(:disabled) { transform: translateY(0); }
+button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+textarea, input, select { border-radius: 10px; transition: border-color .18s ease, box-shadow .18s ease; }
+textarea:focus, input:focus, select:focus { border-color: #b7c8bc; box-shadow: 0 0 0 4px rgba(53, 126, 91, .08); outline: none; }
+
+.mono { font-family: 'DM Mono', monospace; }
+.grid-paper {
+  background-color: var(--paper-deep);
+  background-image: linear-gradient(rgba(203, 213, 205, .36) 1px, transparent 1px), linear-gradient(90deg, rgba(203, 213, 205, .36) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.panel {
+  background: rgba(255,255,255,.82);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+.editor {
+  overflow: hidden;
+  background: #1b2823;
+  color: #dce8e0;
+  border: 1px solid #30433a;
+  border-radius: 14px;
+  box-shadow: 0 18px 35px rgba(20, 35, 28, .15);
+}
+.editor textarea { outline: none; resize: vertical; }
+.editor textarea::selection { background: #3a6250; }
+.tab-active { color: var(--ink); border-bottom: 2px solid var(--amber); }
+
+@media (max-width: 640px) {
+  .grid-paper { background-size: 24px 24px; }
+  .panel { border-radius: 13px; }
+  .editor { border-radius: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

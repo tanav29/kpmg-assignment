@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Submission {
+  id         String   @id @default(cuid())
+  challengeId String
+  ownerId    String   @default("demo-student")
+  language   String
+  code       String
+  output     String
+  passed     Boolean
+  aiFeedback String
+  createdAt  DateTime @default(now())
+  challenge  Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+}
+
+model Challenge {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  language    String
+  createdAt   DateTime     @default(now())
+  testCases   TestCase[]
+  submissions Submission[]
+}
+
+model TestCase {
+  id          String    @id @default(cuid())
+  challengeId String
+  input       String
+  expected    String
+  visible     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+}
+
+model Doubt {
+  id           String   @id @default(cuid())
+  ownerId      String   @default("demo-student")
+  question     String
+  aiDraft      String
+  teacherAnswer String?
+  status       Status   @default(PENDING)
+  createdAt    DateTime @default(now())
+}
